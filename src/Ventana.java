@@ -1,7 +1,6 @@
 import java.awt.*;
 import java.util.*;
 import javax.swing.*;
-import javax.swing.border.*;
 
 public class Ventana extends JFrame {
     private JPanel pArbol;
@@ -42,11 +41,21 @@ public class Ventana extends JFrame {
 
         btnInsertar.addActionListener(e -> {
             dibujar();
+            txtEntrada.setText("");
         });
 
         btnEliminar.addActionListener(e -> {
-            // Acción para eliminar un nodo (no implementada)
-            
+            try{
+                int value = Integer.parseInt(txtEntrada.getText());
+                rbt.delete(value);
+                actualizarPosiciones();
+                pArbol.repaint();
+
+                txtEntrada.setText("");
+
+            } catch (Exception ex){
+                System.out.println("Valor inválido.");
+            }
         });
 
         p1.add(txtEntrada);
@@ -58,34 +67,38 @@ public class Ventana extends JFrame {
         setVisible(true);
     }
 
-    public void calcularPosicion(Nodo<Integer> nodo, int nivel, Map<Nodo<Integer>, Point> posiciones, int ancho, int alto, int x, int aa){
+    public void calcularPosicion(Nodo<Integer> nodo, int x, int y, int dx){
         if(nodo == null) return;
 
-        int distancia = ancho / (nivel+1)/ 4;
-        int y = nivel*120;
         posiciones.put(nodo, new Point(x, y));
-        calcularPosicion(nodo.left, nivel+1, posiciones, ancho, alto, x-distancia, aa);
-        calcularPosicion(nodo.right, nivel+1, posiciones, ancho, alto, x+distancia, aa);
+
+        int nextDx = dx/2;
+        if(nodo.left != null){
+            calcularPosicion(nodo.left, x - dx, y + 120, nextDx);
+        }
+
+        if(nodo.right != null){
+            calcularPosicion(nodo.right, x + dx, y + 120, nextDx);
+        }
+    }
+
+    public void actualizarPosiciones(){
+        posiciones.clear();
+
+        int ancho = pArbol.getWidth();
+        if (ancho <= 0) ancho = 1000; 
+            
+        int xInicial = pArbol.getWidth()/2;
+        int dx = pArbol.getWidth()/6;
+
+        calcularPosicion(rbt.root, xInicial, 80, dx);
     }
 
     public void dibujar() {
         int value = Integer.parseInt(txtEntrada.getText());
         rbt.insert(value);
-        
-        int aa = (int) Math.ceil(Math.log(rbt.size) / Math.log(2));
-        aa = Math.max(aa, 1) + 2;
 
-        int ancho = pArbol.getWidth();
-        int alto = pArbol.getHeight();
-        if(ancho <= 0 || alto <= 0){
-            ancho = 1000;
-            alto = 800;
-        }
-
-        posiciones.clear();
-        int xCentro = ancho/2;
-        calcularPosicion(rbt.root, 1, posiciones, ancho, alto, xCentro, aa);
-
+        actualizarPosiciones();
         pArbol.repaint();
     }
 
@@ -112,7 +125,7 @@ public class Ventana extends JFrame {
         }   
 
         //Dibujar nodos
-        int diameter = 80;
+        int diameter = 100;
 
         for (Map.Entry<Nodo<Integer>, Point> entry : posiciones.entrySet()) {
             Nodo<Integer> nodo = entry.getKey();
@@ -127,6 +140,13 @@ public class Ventana extends JFrame {
             g2.setColor(Color.BLACK);
             g2.setStroke(new BasicStroke(2));
             g2.drawOval(x, y, diameter, diameter);
+
+            //Color del texto 
+            if(nodo.color == Color.BLACK){
+                g2.setColor(Color.WHITE);
+            } else {
+                g2.setColor(Color.BLACK);
+            }
 
             g2.setFont(font);
             String text = "" + nodo.elemento;

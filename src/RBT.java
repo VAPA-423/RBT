@@ -86,7 +86,7 @@ public class RBT<T extends Comparable<T>> {
         Nodo<T> y = nodo.left;
 
         if(y == null) return;
-        
+
         nodo.left = y.right;
 
         if(y.right != null){
@@ -246,5 +246,146 @@ public class RBT<T extends Comparable<T>> {
         if(nodo.right != null){
             inOrderRecursivo(nodo.right);
         }
+    }
+
+    public Nodo<T> buscar(T e) {
+        Nodo<T> actual = root;
+        
+        while(actual != null) {
+            if (e.compareTo(actual.elemento) == 0) {
+                return actual;
+            }
+            if (actual.elemento.compareTo(e) > 0) {
+                actual = actual.left;
+            } else {
+                actual = actual.right;
+            }
+        }
+        return null;
+    }
+
+    public Nodo<T> minimum(Nodo<T> nodo){
+        Nodo<T> actual = nodo;
+
+        while(actual.left != null){
+            actual = actual.left;
+        }
+
+        return actual;
+    }
+
+    public void transplant(Nodo<T> u, Nodo<T> v){
+        if(u.parent == null){
+            root = v;
+        } else if(u == u.parent.left){
+            u.parent.left = v;
+        } else {
+            u.parent.right = v;
+        }
+
+        if(v != null){
+            v.parent = u.parent;
+        }
+    }
+
+
+    public void delete(T elemento){
+        Nodo<T> actual = buscar(elemento);
+        if(actual == null) return;
+
+        Nodo<T> nodo = actual;
+        Color colorActual = actual.color;
+        Nodo<T> x = null;
+
+        if(actual.left == null){
+            x = actual.right;
+            transplant(nodo, nodo.right);
+
+        } else if(nodo.right == null){
+            x = nodo.left;
+            transplant(nodo, nodo.left);
+        } else {
+            actual = minimum(nodo.right);
+            colorActual = actual.color;
+            x = actual.right;
+            
+            if(actual.parent == nodo){
+                if(x != null) x.parent = actual;
+            } else {
+                transplant(actual, actual.right);
+                actual.right = nodo.right;
+                actual.right.parent = actual;
+            }
+
+            transplant(nodo, actual);
+            actual.left = nodo.left;
+            actual.left.parent = actual;
+            actual.color = nodo.color;
+        }
+
+        if(colorActual == Color.BLACK) deleteFix(x);
+    }
+
+    public void deleteFix(Nodo<T> x){
+        while (x != root && x.color == Color.BLACK) {
+            if(x == x.parent.left){
+                Nodo<T> w = x.parent.right;
+
+                if(w != null && w.color == Color.RED){
+                    w.color = Color.BLACK;
+                    x.parent.color = Color.RED;
+                    rotateLeft(x.parent);
+                    w = x.parent.right;
+                }
+
+                if((w.left == null || w.left.color == Color.BLACK) && (w.right == null || w.right.color == Color.BLACK)){
+                    w.color = Color.RED;
+                    x = x.parent;
+                } else {
+                    if(w.right == null || w.right.color == Color.BLACK){
+                        if(w.left != null) w.left.color = Color.BLACK;
+                        w.color = Color.RED;
+                        rotateRight(w);
+                        w = x.parent.right;
+                    }
+
+                    w.color = x.parent.color;
+                    x.parent.color = Color.BLACK;
+
+                    if(w.right != null) w.right.color = Color.BLACK;
+                    rotateLeft(x.parent);
+                    x = root;
+                }
+            } else {
+                Nodo<T> w = x.parent.left;
+
+                if(w != null && w.color == Color.RED){
+                    w.color = Color.BLACK;
+                    x.parent.color = Color.RED;
+                    rotateRight(x.parent);
+                    w = x.parent.left;
+                }
+
+                if((w.right == null || w.right.color == Color.BLACK) && (w.left == null || w.left.color == Color.BLACK)){
+                    w.color = Color.RED;
+                    x = x.parent;
+                } else {
+                    if(w.left == null || w.left.color == Color.BLACK){
+                        if(w.right != null) w.right.color = Color.BLACK;
+                        w.color = Color.RED;
+                        rotateLeft(w);
+                        w = x.parent.left;
+                    }
+
+                    w.color = x.parent.color;
+                    x.parent.color = Color.BLACK;
+                    if(w.left != null)w.left.color = Color.BLACK;
+                    rotateRight(x.parent);
+                    x = root;
+                }
+            }
+        }
+
+        if(x != null) x.color = Color.BLACK;
     }
 }
