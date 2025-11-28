@@ -7,7 +7,7 @@ public class Ventana extends JFrame {
     private JPanel pArbol;
     private JTextField txtEntrada;
     private RBT<Integer> rbt = new RBT<>();
-    private Font font = new Font("MONOSPACED", Font.BOLD, 25);
+    private Font font = new Font("MONOSPACED", Font.BOLD, 30);
     private Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     private Map<Nodo<Integer>, Point> posiciones = new HashMap<>();
 
@@ -61,7 +61,7 @@ public class Ventana extends JFrame {
     public void calcularPosicion(Nodo<Integer> nodo, int nivel, Map<Nodo<Integer>, Point> posiciones, int ancho, int alto, int x, int aa){
         if(nodo == null) return;
 
-        int distancia = ancho / (int) Math.pow(2, nivel);
+        int distancia = ancho / (nivel+1)/ 4;
         int y = nivel*120;
         posiciones.put(nodo, new Point(x, y));
         calcularPosicion(nodo.left, nivel+1, posiciones, ancho, alto, x-distancia, aa);
