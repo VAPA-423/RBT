@@ -1,2 +1,2 @@
-## Holas
-Apenas estoy viendo que si me sirva todo lo de git jeje
+## Árbol Rojo-Negro
+Práctica de árbol autobalanceado con interfaz gráfica.
